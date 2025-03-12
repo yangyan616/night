@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Night Time Routine Checklist</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Night Time Routine Checklist</h1>
+        <div class="checklist">
+            <div class="checklist-item">
+                <input type="checkbox" id="bedtime" class="routine-checkbox">
+                <label for="bedtime">Set my bedtime for 8 hours of sleep</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="shower" class="routine-checkbox">
+                <label for="shower">Shower, brush teeth, dry hair</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="cleanup" class="routine-checkbox">
+                <label for="cleanup">Clean up my mess</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="clothes" class="routine-checkbox">
+                <label for="clothes">Lay out clothes for tomorrow</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="phone" class="routine-checkbox">
+                <label for="phone">Put my phone outside of bedroom</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="metime" class="routine-checkbox">
+                <label for="metime">10 min "me time": read / journal /meditate</label>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="celebration-container" id="celebration-container">
+            <div class="celebration-content">
+                <h2>Great job!</h2>
+                <p>You've completed your night time routine!</p>
+                <p>Have a good night sleep</p>
+                <div class="stars-container">
+                    <div class="star star1"><i class="fas fa-star"></i></div>
+                    <div class="star star2"><i class="fas fa-star"></i></div>
+                    <div class="star star3"><i class="fas fa-star"></i></div>
+                    <div class="star star4"><i class="fas fa-star"></i></div>
+                    <div class="star star5"><i class="fas fa-star"></i></div>
+                </div>
+                <div class="moon">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <button id="reset-button">Reset for Tomorrow</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
