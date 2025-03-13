@@ -4,12 +4,12 @@ A simple, beautiful web application to help you establish and maintain a consist
 
 ## Features
 
-- Track your night time routine with five essential tasks:
+- Track your night time routine with essential tasks such as:
   - Set my bedtime
   - Clean up my mess
   - Lay out clothes for tomorrow
-  - Park my phone outside of bedroom
-  - 10 min "me time"
+  - Put my phone outside of bedroom
+  - "Me time"
 - Progress bar to visualize your completion status
 - Celebration animation when you complete all tasks
 - Persistent storage (your checklist state is saved between sessions)
