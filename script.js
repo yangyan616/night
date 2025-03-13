@@ -4,6 +4,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const celebrationContainer = document.getElementById('celebration-container');
     const resetButton = document.getElementById('reset-button');
+    const checkoutButton = document.getElementById('checkout-button');
+    
+    // Initialize Stripe with the correct publishable key
+    const stripe = Stripe('pk_live_51MyH0mDp1Vb1cgxuaHlVf7NJJdTAV3ZwvhrBkxQCzXh7mSII0WngmonjRWU6vmYOqah7KSxCtPBU3jXp7HSsD53Z00MJk7YBlc');
+    
+    // Add event listener to checkout button
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', async function() {
+            try {
+                // Show loading state
+                checkoutButton.disabled = true;
+                checkoutButton.textContent = 'Processing...';
+                
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Server error:', errorData);
+                    throw new Error(errorData.details || errorData.error || 'Payment session creation failed');
+                }
+
+                const session = await response.json();
+                
+                // Redirect to Stripe Checkout
+                const result = await stripe.redirectToCheckout({
+                    sessionId: session.id
+                });
+
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment processing error: ' + error.message);
+                
+                // Reset button state
+                checkoutButton.disabled = false;
+                checkoutButton.innerHTML = '<i class="fas fa-crown"></i> Upgrade for $1.99';
+            }
+        });
+    }
     
     console.log('Reset button element:', resetButton); // Debug log to check if button is found
     

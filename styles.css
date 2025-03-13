@@ -322,4 +322,83 @@ label {
         top: 100vh;
         transform: rotate(360deg) translateX(-25px);
     }
+}
+
+/* Payment Section Styles */
+.payment-section {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-section h2 {
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: #e2e2e2;
+}
+
+.payment-section p {
+    margin-bottom: 15px;
+    color: #b8b8b8;
+    font-size: 14px;
+}
+
+.payment-button {
+    background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(157, 80, 187, 0.4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(157, 80, 187, 0.6);
+}
+
+.payment-button:active {
+    transform: translateY(1px);
+}
+
+.payment-button i {
+    margin-right: 8px;
+}
+
+.price-note {
+    font-size: 12px;
+    color: #b8b8b8;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.payment-methods {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    color: #666;
+}
+
+.payment-methods i, .payment-methods svg {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.alipay-icon, .wechat-icon, .unionpay-icon {
+    opacity: 0.8;
+}
+
+.alipay-icon:hover, .wechat-icon:hover, .unionpay-icon:hover {
+    opacity: 1;
 } 
