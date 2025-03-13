@@ -24,8 +24,8 @@ app.post('/create-checkout-session', async (req, res) => {
   try {
     // First, create a new product each time to avoid using cached products
     const product = await stripe.products.create({
-      name: 'Night Routine Premium',
-      description: 'Premium features for your night routine app',
+      name: 'Daily Routine Premium',
+      description: 'Premium features for your daily routine app',
     });
 
     // Then create a price for this product
