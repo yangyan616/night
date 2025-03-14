@@ -80,6 +80,70 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Add event listener to checkout button
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', async function() {
+            try {
+                // Validate Stripe initialization first
+                if (!stripe) {
+                    throw new Error("Stripe is not properly initialized. Please refresh the page or contact support.");
+                }
+                
+                // Get user's email if we have a field for it
+                const emailInput = document.getElementById('customer-email');
+                const email = emailInput ? emailInput.value : null;
+                
+                if (!email) {
+                    alert('Please enter your email address');
+                    return;
+                }
+                
+                // Show loading state
+                checkoutButton.disabled = true;
+                checkoutButton.textContent = 'Processing...';
+                
+                console.log("Creating checkout session...");
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Server error:', errorData);
+                    throw new Error(errorData.details || errorData.error || 'Payment session creation failed');
+                }
+
+                const session = await response.json();
+                console.log("Checkout session created:", session.id?.substring(0, 10) + "...");
+                
+                // Redirect to Stripe Checkout
+                console.log("Redirecting to Stripe checkout...");
+                const result = await stripe.redirectToCheckout({
+                    sessionId: session.id
+                });
+
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                
+                // Reset button state
+                checkoutButton.disabled = false;
+                checkoutButton.innerHTML = '<i class="fas fa-crown"></i> Upgrade for $0.99';
+                
+                // Show user-friendly error
+                alert('Payment processing error: ' + error.message);
+            }
+        });
+    }
+    
     function handleReset() {
         console.log('Reset handler called');
         resetChecklist();
