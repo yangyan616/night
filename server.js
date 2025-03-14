@@ -40,56 +40,50 @@ app.use((req, res, next) => {
 
 // Add middleware to inject Stripe keys into HTML files
 app.use((req, res, next) => {
-  console.log('🌐 Middleware processing request for:', req.path);
-  
   const originalSend = res.send;
   
   res.send = function(body) {
     if (typeof body === 'string' && body.includes('<!DOCTYPE html>')) {
-      console.log('📄 Processing HTML response');
-      
       const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
       
-      if (!publishableKey) {
-        console.error('❌ ERROR: No publishable key found in environment!');
-        console.error('Please set STRIPE_PUBLISHABLE_KEY in Railway environment variables.');
+      // Debug logging
+      console.log('\n🔍 HTML Response Intercepted:');
+      console.log('URL:', req.url);
+      console.log('Has publishable key:', !!publishableKey);
+      if (publishableKey) {
+        console.log('Key prefix:', publishableKey.substring(0, 7));
+      } else {
+        console.error('❌ NO PUBLISHABLE KEY IN ENV!');
       }
       
-      console.log('🔑 Stripe key injection:');
-      console.log('- Has key:', !!publishableKey);
-      console.log('- Key type:', publishableKey?.startsWith('pk_live_') ? 'live' : 'test');
-      console.log('- Key prefix:', publishableKey?.substring(0, 7));
-      
-      // Check for existing meta tag
-      const hasExistingTag = body.includes('meta name="stripe-key"');
-      console.log('- Has existing meta tag:', hasExistingTag);
-      
-      if (!hasExistingTag) {
-        console.error('❌ ERROR: No stripe-key meta tag found in HTML!');
+      // Try multiple replacement patterns
+      if (publishableKey) {
+        const patterns = [
+          /<meta name="stripe-key" content="[^"]*"/,
+          /<meta name="stripe-key" content="pk_replacedByMiddleware"/,
+          /<meta name="stripe-key" content="pk_[^"]*"/
+        ];
+        
+        let replaced = false;
+        for (const pattern of patterns) {
+          const newBody = body.replace(pattern, `<meta name="stripe-key" content="${publishableKey}"`);
+          if (newBody !== body) {
+            body = newBody;
+            replaced = true;
+            console.log('✅ Key replacement successful with pattern:', pattern);
+            break;
+          }
+        }
+        
+        if (!replaced) {
+          console.error('❌ Failed to replace key with any pattern!');
+          console.log('Meta tag in HTML:', body.match(/<meta name="stripe-key"[^>]*>/)?.[0]);
+        }
       }
       
-      // More specific regex replacement
-      const originalBody = body;
-      body = body.replace(
-        /<meta name="stripe-key" content="[^"]*"/,
-        `<meta name="stripe-key" content="${publishableKey}"`
-      );
-      
-      // Verify the replacement
-      const changed = originalBody !== body;
-      console.log('- Body was modified:', changed);
-      
-      if (!changed) {
-        console.error('❌ WARNING: Key injection may have failed!');
-      }
-      
-      // Verify the final meta tag
-      const finalTag = body.match(/<meta name="stripe-key" content="([^"]*)"/);
-      console.log('- Final meta tag content:', finalTag?.[1]?.substring(0, 10) + '...');
-      
-      if (!finalTag) {
-        console.error('❌ ERROR: Could not verify key injection!');
-      }
+      // Verify final state
+      const finalKey = body.match(/<meta name="stripe-key" content="([^"]*)"/)?.[1];
+      console.log('Final key in HTML:', finalKey?.substring(0, 7));
     }
     return originalSend.call(this, body);
   };
