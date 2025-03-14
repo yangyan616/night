@@ -14,20 +14,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Stripe with the publishable key
     const stripePublishableKey = document.querySelector('meta[name="stripe-key"]')?.content;
     
-    // Add debug logging for Stripe key
-    console.log("Stripe publishable key prefix:", stripePublishableKey?.substring(0, 7) + "...");
+    // Enhanced debug logging for Stripe key
+    console.log("Stripe initialization:");
+    console.log("- Meta tag found:", !!document.querySelector('meta[name="stripe-key"]'));
+    console.log("- Has key:", !!stripePublishableKey);
+    console.log("- Key prefix:", stripePublishableKey?.substring(0, 7));
+    console.log("- Key type:", stripePublishableKey?.startsWith('pk_live') ? 'live' : 'test');
     
-    // Only initialize Stripe if we have a key
+    // Only initialize Stripe if we have a valid key
     let stripe;
-    if (stripePublishableKey) {
+    if (stripePublishableKey?.startsWith('pk_')) {
         try {
             stripe = Stripe(stripePublishableKey);
-            console.log("Stripe initialized successfully");
+            console.log("✅ Stripe initialized successfully");
         } catch (error) {
-            console.error("Failed to initialize Stripe:", error);
+            console.error("❌ Failed to initialize Stripe:", error);
+            alert("Payment system initialization failed. Please refresh the page or contact support.");
         }
     } else {
-        console.error("No Stripe publishable key found in page metadata");
+        console.error("❌ Invalid or missing Stripe publishable key");
+        console.error("Key received:", stripePublishableKey?.substring(0, 7) + "...");
     }
     
     // Add event listener to checkout button

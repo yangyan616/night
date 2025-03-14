@@ -40,27 +40,32 @@ app.use((req, res, next) => {
 
 // Add middleware to inject Stripe keys into HTML files
 app.use((req, res, next) => {
-  // Store the original send function
   const originalSend = res.send;
   
-  // Override the send function for HTML responses
   res.send = function(body) {
-    // Only process HTML responses
     if (typeof body === 'string' && body.includes('<!DOCTYPE html>')) {
-      // Use single publishable key
       const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
       
-      // Log which key we're using for debugging
-      console.log("Injecting Stripe publishable key:", 
-        publishableKey?.substring(0, 7) + "...");
+      // Add more detailed logging
+      console.log("Middleware key injection:");
+      console.log("- Has publishable key:", !!publishableKey);
+      console.log("- Key prefix:", publishableKey?.substring(0, 7));
+      console.log("- Key type:", publishableKey?.startsWith('pk_live') ? 'live' : 'test');
       
-      // Replace both test and live key placeholders with the single key
+      if (!publishableKey) {
+        console.error("WARNING: No publishable key found in environment!");
+      }
+      
+      // More specific regex replacement
       body = body.replace(
-        /content="(pk_test_your_test_publishable_key|pk_live_your_live_publishable_key|pk_replacedByMiddleware)"/g, 
+        /content="pk_[^"]*"/g,
         `content="${publishableKey}"`
       );
+      
+      // Verify the replacement worked
+      const verifyKey = body.match(/content="(pk_[^"]*)"/);
+      console.log("- Injected key prefix:", verifyKey?.[1]?.substring(0, 7));
     }
-    // Call the original send function
     return originalSend.call(this, body);
   };
   
