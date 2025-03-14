@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const isNightRoutine = !document.body.classList.contains('morning-theme');
     
     // Initialize Stripe with the publishable key
-    const stripePublishableKey = document.querySelector('meta[name="stripe-live-key"]')?.content;
+    const stripePublishableKey = document.querySelector('meta[name="stripe-key"]')?.content;
     
     // Add debug logging for Stripe key
     console.log("Stripe publishable key prefix:", stripePublishableKey?.substring(0, 7) + "...");

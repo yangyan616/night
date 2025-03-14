@@ -56,7 +56,7 @@ app.use((req, res, next) => {
       
       // Replace both test and live key placeholders with the single key
       body = body.replace(
-        /content="(pk_test_your_test_publishable_key|pk_live_your_live_publishable_key)"/g, 
+        /content="(pk_test_your_test_publishable_key|pk_live_your_live_publishable_key|pk_replacedByMiddleware)"/g, 
         `content="${publishableKey}"`
       );
     }
