@@ -11,18 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if we're on the night routine page
     const isNightRoutine = !document.body.classList.contains('morning-theme');
     
-    // Check if we're in production mode (assuming your server sets this)
-    const isProduction = window.location.hostname !== 'localhost' && 
-                         window.location.hostname !== '127.0.0.1';
-    
-    // Initialize Stripe with the appropriate publishable key
-    // This will be set by your server when it serves the page
-    const stripePublishableKey = isProduction 
-        ? document.querySelector('meta[name="stripe-live-key"]')?.content 
-        : document.querySelector('meta[name="stripe-test-key"]')?.content;
+    // Initialize Stripe with the publishable key
+    const stripePublishableKey = document.querySelector('meta[name="stripe-live-key"]')?.content;
     
     // Add debug logging for Stripe key
-    console.log("Stripe mode:", isProduction ? "PRODUCTION" : "TEST");
     console.log("Stripe publishable key prefix:", stripePublishableKey?.substring(0, 7) + "...");
     
     // Only initialize Stripe if we have a key

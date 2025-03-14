@@ -1,16 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-// Switch back to using environment-dependent keys
-const stripe = require('stripe')(process.env.NODE_ENV === 'production' 
-    ? process.env.STRIPE_LIVE_SECRET_KEY 
-    : process.env.STRIPE_SECRET_KEY);
+// Simplify to use single key regardless of environment
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Add some initialization logging
 console.log("Stripe initialization:");
-console.log("- Environment:", process.env.NODE_ENV);
-console.log("- Using key type:", process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST');
-console.log("- Test key exists:", !!process.env.STRIPE_SECRET_KEY);
-console.log("- Live key exists:", !!process.env.STRIPE_LIVE_SECRET_KEY);
+console.log("- Using single key mode");
+console.log("- Key exists:", !!process.env.STRIPE_SECRET_KEY);
 
 const fs = require('fs').promises;
 const path = require('path');
@@ -51,16 +47,14 @@ app.use((req, res, next) => {
   res.send = function(body) {
     // Only process HTML responses
     if (typeof body === 'string' && body.includes('<!DOCTYPE html>')) {
-      // Determine which publishable key to use based on environment
-      const publishableKey = process.env.NODE_ENV === 'production'
-        ? process.env.STRIPE_LIVE_PUBLISHABLE_KEY
-        : process.env.STRIPE_PUBLISHABLE_KEY;
+      // Use single publishable key
+      const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
       
       // Log which key we're using for debugging
       console.log("Injecting Stripe publishable key:", 
         publishableKey?.substring(0, 7) + "...");
       
-      // Replace both test and live key placeholders with the appropriate key
+      // Replace both test and live key placeholders with the single key
       body = body.replace(
         /content="(pk_test_your_test_publishable_key|pk_live_your_live_publishable_key)"/g, 
         `content="${publishableKey}"`
@@ -237,21 +231,15 @@ async function sendAccessEmail(email, token) {
 app.post('/create-checkout-session', async (req, res) => {
     try {
         console.log("Creating checkout session...");
-        console.log("Environment:", process.env.NODE_ENV);
-        console.log("Using key type:", process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST');
         
         // Check for required API key
-        const apiKey = process.env.NODE_ENV === 'production' 
-            ? process.env.STRIPE_LIVE_SECRET_KEY 
-            : process.env.STRIPE_SECRET_KEY;
-            
-        if (!apiKey) {
-            throw new Error(`Missing ${process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST'} API key`);
+        if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error('Missing Stripe secret key');
         }
         
-        console.log("API key starts with:", apiKey.substring(0, 7) + "...");
+        console.log("Using secret key starting with:", process.env.STRIPE_SECRET_KEY.substring(0, 7) + "...");
         
-        // Create the checkout session with improved error handling
+        // Create the checkout session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
@@ -362,16 +350,9 @@ app.get('/test-email', async (req, res) => {
 app.get('/test-stripe', async (req, res) => {
     try {
         console.log("Testing Stripe connection...");
-        console.log("Environment:", process.env.NODE_ENV);
-        
-        // Which key is being used
-        const keyType = process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST';
-        console.log("Using key type:", keyType);
         
         // Check if we have the key
-        const key = process.env.NODE_ENV === 'production' 
-            ? process.env.STRIPE_LIVE_SECRET_KEY 
-            : process.env.STRIPE_SECRET_KEY;
+        const key = process.env.STRIPE_SECRET_KEY;
             
         console.log("Key exists:", !!key);
         console.log("Key starts with:", key?.substring(0, 7) + "...");
@@ -382,7 +363,6 @@ app.get('/test-stripe', async (req, res) => {
         res.json({ 
             success: true, 
             message: 'Stripe connection successful',
-            keyType: keyType,
             hasProducts: products.data.length > 0,
             firstProduct: products.data[0] ? products.data[0].name : null
         });
