@@ -208,6 +208,13 @@ async function sendAccessEmail(email, token) {
 
 app.post('/create-checkout-session', async (req, res) => {
     try {
+        console.log("Creating checkout session...");
+        console.log("Environment:", process.env.NODE_ENV);
+        console.log("Using key type:", process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST');
+        console.log("Key starts with:", (process.env.NODE_ENV === 'production' 
+            ? process.env.STRIPE_LIVE_SECRET_KEY 
+            : process.env.STRIPE_SECRET_KEY)?.substring(0, 7) + "...");
+        
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
@@ -228,8 +235,19 @@ app.post('/create-checkout-session', async (req, res) => {
 
         res.json({ id: session.id });
     } catch (error) {
-        console.error('Error creating checkout session:', error);
-        res.status(500).json({ error: 'Failed to create checkout session' });
+        console.error('Error creating checkout session:', error.message);
+        console.error('Error type:', error.type);
+        console.error('Error code:', error.code);
+        console.error('Error param:', error.param);
+        
+        // Return detailed error to the client for debugging
+        res.status(500).json({ 
+            error: 'Failed to create checkout session', 
+            details: error.message,
+            type: error.type,
+            code: error.code,
+            param: error.param
+        });
     }
 });
 
@@ -290,6 +308,45 @@ app.get('/test-email', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: error.message 
+        });
+    }
+});
+
+// Add a test endpoint to verify Stripe connection
+app.get('/test-stripe', async (req, res) => {
+    try {
+        console.log("Testing Stripe connection...");
+        console.log("Environment:", process.env.NODE_ENV);
+        
+        // Which key is being used
+        const keyType = process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST';
+        console.log("Using key type:", keyType);
+        
+        // Check if we have the key
+        const key = process.env.NODE_ENV === 'production' 
+            ? process.env.STRIPE_LIVE_SECRET_KEY 
+            : process.env.STRIPE_SECRET_KEY;
+            
+        console.log("Key exists:", !!key);
+        console.log("Key starts with:", key?.substring(0, 7) + "...");
+        
+        // Try to list products (simple API call)
+        const products = await stripe.products.list({ limit: 1 });
+        
+        res.json({ 
+            success: true, 
+            message: 'Stripe connection successful',
+            keyType: keyType,
+            hasProducts: products.data.length > 0,
+            firstProduct: products.data[0] ? products.data[0].name : null
+        });
+    } catch (error) {
+        console.error('Error testing Stripe connection:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            type: error.type,
+            code: error.code
         });
     }
 });
