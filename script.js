@@ -82,64 +82,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add event listener to checkout button
     if (checkoutButton) {
-        checkoutButton.addEventListener('click', async function() {
+        checkoutButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Processing...';
+
             try {
-                // Validate Stripe initialization first
-                if (!stripe) {
-                    throw new Error("Stripe is not properly initialized. Please refresh the page or contact support.");
-                }
-                
-                // Get user's email if we have a field for it
-                const emailInput = document.getElementById('customer-email');
-                const email = emailInput ? emailInput.value : null;
-                
-                if (!email) {
-                    alert('Please enter your email address');
-                    return;
-                }
-                
-                // Show loading state
-                checkoutButton.disabled = true;
-                checkoutButton.textContent = 'Processing...';
-                
-                console.log("Creating checkout session...");
+                console.log('Starting checkout process...');
+                const stripeKey = document.querySelector('meta[name="stripe-key"]')?.content;
+                console.log('Using Stripe key (first 8 chars):', stripeKey?.substring(0, 8));
+
                 const response = await fetch('/create-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email
-                    })
+                    }
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('Server error:', errorData);
-                    throw new Error(errorData.details || errorData.error || 'Payment session creation failed');
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
                 }
 
-                const session = await response.json();
-                console.log("Checkout session created:", session.id?.substring(0, 10) + "...");
+                const { url } = await response.json();
+                console.log('Received checkout URL:', url);
                 
-                // Redirect to Stripe Checkout
-                console.log("Redirecting to Stripe checkout...");
-                const result = await stripe.redirectToCheckout({
-                    sessionId: session.id
-                });
-
-                if (result.error) {
-                    throw new Error(result.error.message);
+                if (!url) {
+                    throw new Error('No checkout URL received from server');
                 }
+
+                // Redirect to Stripe checkout
+                window.location.href = url;
             } catch (error) {
-                console.error('Payment error:', error);
-                
-                // Reset button state
-                checkoutButton.disabled = false;
-                checkoutButton.innerHTML = '<i class="fas fa-crown"></i> Upgrade for $0.99';
-                
-                // Show user-friendly error
-                alert('Payment processing error: ' + error.message);
+                console.error('Checkout error:', error);
+                button.textContent = 'Error - please try again';
+                alert('There was a problem with the checkout process: ' + error.message);
+            } finally {
+                button.disabled = false;
             }
         });
     }

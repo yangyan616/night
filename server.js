@@ -253,60 +253,54 @@ async function sendAccessEmail(email, token) {
 }
 
 app.post('/create-checkout-session', async (req, res) => {
-    try {
-        console.log("Creating checkout session...");
-        
-        // Check for required API key
-        if (!process.env.STRIPE_SECRET_KEY) {
-            throw new Error('Missing Stripe secret key');
-        }
-        
-        console.log("Using secret key starting with:", process.env.STRIPE_SECRET_KEY.substring(0, 7) + "...");
-        
-        // Create the checkout session
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: 'Premium Routine Access',
-                        description: 'Access to both Morning and Night Routines',
-                    },
-                    unit_amount: 99,
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: `${req.headers.origin}/success.html`,
-            cancel_url: `${req.headers.origin}/`,
-            // Collect email address for sending access link
-            customer_email: req.body.email,
-            // Add expanded metadata for better tracking
-            metadata: {
-                app: 'daily-routine',
-                source: 'website-upgrade'
-            }
-        });
+  console.log('Creating checkout session...');
+  console.log('Stripe Key (first 8 chars):', process.env.STRIPE_SECRET_KEY?.substring(0, 8));
+  
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Daily Routine Premium',
+              description: 'Unlock premium features for your daily routine',
+            },
+            unit_amount: 500, // $5.00
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${req.headers.origin}/success.html`,
+      cancel_url: `${req.headers.origin}/cancel.html`,
+    });
 
-        console.log("Session created successfully:", session.id);
-        res.json({ id: session.id });
-    } catch (error) {
-        console.error('Error creating checkout session:', error.message);
-        console.error('Error type:', error.type);
-        console.error('Error code:', error.code);
-        console.error('Error param:', error.param);
-        console.error('Error stack:', error.stack);
-        
-        // Return detailed error to the client for debugging
-        res.status(500).json({ 
-            error: 'Failed to create checkout session', 
-            details: error.message,
-            type: error.type,
-            code: error.code,
-            param: error.param
-        });
+    console.log('Session created successfully:', {
+      id: session.id,
+      url: session.url
+    });
+
+    res.json({ id: session.id, url: session.url });
+  } catch (error) {
+    console.error('Error creating checkout session:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update middleware to log key injection
+app.use((req, res, next) => {
+  const originalSend = res.send;
+  res.send = function (body) {
+    if (typeof body === 'string' && body.includes('pk_replacedByMiddleware')) {
+      console.log('Injecting Stripe publishable key...');
+      console.log('Using key (first 8 chars):', process.env.STRIPE_PUBLISHABLE_KEY?.substring(0, 8));
+      body = body.replace(/pk_replacedByMiddleware/g, process.env.STRIPE_PUBLISHABLE_KEY || '');
     }
+    return originalSend.call(this, body);
+  };
+  next();
 });
 
 // Webhook handling
