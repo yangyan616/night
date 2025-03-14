@@ -40,31 +40,39 @@ app.use((req, res, next) => {
 
 // Add middleware to inject Stripe keys into HTML files
 app.use((req, res, next) => {
+  console.log('🌐 Middleware processing request for:', req.path);
+  
   const originalSend = res.send;
   
   res.send = function(body) {
     if (typeof body === 'string' && body.includes('<!DOCTYPE html>')) {
+      console.log('📄 Processing HTML response');
+      
       const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
       
-      // Add more detailed logging
-      console.log("Middleware key injection:");
-      console.log("- Has publishable key:", !!publishableKey);
-      console.log("- Key prefix:", publishableKey?.substring(0, 7));
-      console.log("- Key type:", publishableKey?.startsWith('pk_live') ? 'live' : 'test');
+      console.log('🔑 Stripe key injection:');
+      console.log('- Has key:', !!publishableKey);
+      console.log('- Key type:', publishableKey?.startsWith('pk_live_') ? 'live' : 'test');
+      console.log('- Key prefix:', publishableKey?.substring(0, 7));
       
-      if (!publishableKey) {
-        console.error("WARNING: No publishable key found in environment!");
-      }
+      // Check for existing meta tag
+      const hasExistingTag = body.includes('meta name="stripe-key"');
+      console.log('- Has existing meta tag:', hasExistingTag);
       
       // More specific regex replacement
+      const originalBody = body;
       body = body.replace(
         /content="pk_[^"]*"/g,
         `content="${publishableKey}"`
       );
       
-      // Verify the replacement worked
-      const verifyKey = body.match(/content="(pk_[^"]*)"/);
-      console.log("- Injected key prefix:", verifyKey?.[1]?.substring(0, 7));
+      // Verify the replacement
+      const changed = originalBody !== body;
+      console.log('- Body was modified:', changed);
+      
+      // Verify the final meta tag
+      const finalTag = body.match(/<meta name="stripe-key" content="([^"]*)"/);
+      console.log('- Final meta tag content:', finalTag?.[1]?.substring(0, 10) + '...');
     }
     return originalSend.call(this, body);
   };

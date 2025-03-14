@@ -1,4 +1,40 @@
+// Immediate logging before anything else
+console.log('🔍 Script starting...');
+
+// Check if Stripe is available globally
+console.log('💳 Stripe object available:', typeof Stripe !== 'undefined');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM Content Loaded');
+    
+    // Force log the entire meta tag
+    const metaTag = document.querySelector('meta[name="stripe-key"]');
+    console.log('🔑 Meta tag found:', metaTag?.outerHTML);
+    
+    // Initialize Stripe with the publishable key
+    const stripePublishableKey = metaTag?.content;
+    
+    // Enhanced debug logging for Stripe key
+    console.log('🔐 Stripe key details:');
+    console.log('- Raw content:', stripePublishableKey);
+    console.log('- Length:', stripePublishableKey?.length);
+    console.log('- First 10 chars:', stripePublishableKey?.substring(0, 10));
+    
+    // Only initialize Stripe if we have a valid key
+    let stripe;
+    if (stripePublishableKey?.startsWith('pk_')) {
+        try {
+            stripe = Stripe(stripePublishableKey);
+            console.log("✅ Stripe initialized successfully");
+        } catch (error) {
+            console.error("❌ Stripe initialization failed:", error);
+            alert("Payment system initialization failed. Please refresh the page or contact support.");
+        }
+    } else {
+        console.error("❌ Invalid or missing Stripe publishable key");
+        console.error("Key received:", stripePublishableKey);
+    }
+    
     // Get all checkboxes and other elements
     const checkboxes = document.querySelectorAll('.routine-checkbox');
     const progressBar = document.getElementById('progress-bar');
@@ -10,98 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check if we're on the night routine page
     const isNightRoutine = !document.body.classList.contains('morning-theme');
-    
-    // Initialize Stripe with the publishable key
-    const stripePublishableKey = document.querySelector('meta[name="stripe-key"]')?.content;
-    
-    // Enhanced debug logging for Stripe key
-    console.log("Stripe initialization:");
-    console.log("- Meta tag found:", !!document.querySelector('meta[name="stripe-key"]'));
-    console.log("- Has key:", !!stripePublishableKey);
-    console.log("- Key prefix:", stripePublishableKey?.substring(0, 7));
-    console.log("- Key type:", stripePublishableKey?.startsWith('pk_live') ? 'live' : 'test');
-    
-    // Only initialize Stripe if we have a valid key
-    let stripe;
-    if (stripePublishableKey?.startsWith('pk_')) {
-        try {
-            stripe = Stripe(stripePublishableKey);
-            console.log("✅ Stripe initialized successfully");
-        } catch (error) {
-            console.error("❌ Failed to initialize Stripe:", error);
-            alert("Payment system initialization failed. Please refresh the page or contact support.");
-        }
-    } else {
-        console.error("❌ Invalid or missing Stripe publishable key");
-        console.error("Key received:", stripePublishableKey?.substring(0, 7) + "...");
-    }
-    
-    // Add event listener to checkout button
-    if (checkoutButton) {
-        checkoutButton.addEventListener('click', async function() {
-            try {
-                // Validate Stripe initialization first
-                if (!stripe) {
-                    throw new Error("Stripe is not properly initialized. Please refresh the page or contact support.");
-                }
-                
-                // Show loading state
-                checkoutButton.disabled = true;
-                checkoutButton.textContent = 'Processing...';
-                
-                // Get user's email if we have a field for it
-                const emailInput = document.getElementById('customer-email');
-                const email = emailInput ? emailInput.value : null;
-                
-                console.log("Creating checkout session...");
-                const response = await fetch('/create-checkout-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Server error:', errorData);
-                    throw new Error(errorData.details || errorData.error || 'Payment session creation failed');
-                }
-
-                const session = await response.json();
-                console.log("Checkout session created:", session.id?.substring(0, 10) + "...");
-                
-                // Redirect to Stripe Checkout
-                console.log("Redirecting to Stripe checkout...");
-                const result = await stripe.redirectToCheckout({
-                    sessionId: session.id
-                });
-
-                if (result.error) {
-                    throw new Error(result.error.message);
-                }
-            } catch (error) {
-                console.error('Payment error:', error);
-                
-                // Provide a user-friendly error message
-                if (error.message.includes("publishable key")) {
-                    alert('Stripe configuration error. Please contact support.');
-                } else if (error.message.includes("session")) {
-                    alert('Unable to start checkout process. Please try again later.');
-                } else {
-                    alert('Payment processing error: ' + error.message);
-                }
-                
-                // Reset button state
-                checkoutButton.disabled = false;
-                checkoutButton.innerHTML = '<i class="fas fa-crown"></i> Upgrade for $0.99';
-            }
-        });
-    }
-    
-    console.log('Reset button element:', resetButton); // Debug log to check if button is found
     
     // Load saved state from localStorage
     loadSavedState();
