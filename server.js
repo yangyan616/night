@@ -1,8 +1,17 @@
 require('dotenv').config();
 const express = require('express');
+// Switch back to using environment-dependent keys
 const stripe = require('stripe')(process.env.NODE_ENV === 'production' 
     ? process.env.STRIPE_LIVE_SECRET_KEY 
     : process.env.STRIPE_SECRET_KEY);
+
+// Add some initialization logging
+console.log("Stripe initialization:");
+console.log("- Environment:", process.env.NODE_ENV);
+console.log("- Using key type:", process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST');
+console.log("- Test key exists:", !!process.env.STRIPE_SECRET_KEY);
+console.log("- Live key exists:", !!process.env.STRIPE_LIVE_SECRET_KEY);
+
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
@@ -28,14 +37,19 @@ app.use((req, res, next) => {
   res.send = function(body) {
     // Only process HTML responses
     if (typeof body === 'string' && body.includes('<!DOCTYPE html>')) {
-      // Replace the placeholder keys with actual keys
+      // Determine which publishable key to use based on environment
+      const publishableKey = process.env.NODE_ENV === 'production'
+        ? process.env.STRIPE_LIVE_PUBLISHABLE_KEY
+        : process.env.STRIPE_PUBLISHABLE_KEY;
+      
+      // Log which key we're using for debugging
+      console.log("Injecting Stripe publishable key:", 
+        publishableKey?.substring(0, 7) + "...");
+      
+      // Replace both test and live key placeholders with the appropriate key
       body = body.replace(
-        'content="pk_test_your_test_publishable_key"', 
-        `content="${process.env.STRIPE_PUBLISHABLE_KEY}"`
-      );
-      body = body.replace(
-        'content="pk_live_your_live_publishable_key"', 
-        `content="${process.env.STRIPE_LIVE_PUBLISHABLE_KEY || ''}"`
+        /content="(pk_test_your_test_publishable_key|pk_live_your_live_publishable_key)"/g, 
+        `content="${publishableKey}"`
       );
     }
     // Call the original send function
