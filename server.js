@@ -267,7 +267,7 @@ app.post('/create-checkout-session', async (req, res) => {
               name: 'Daily Routine Premium',
               description: 'Unlock premium features for your daily routine',
             },
-            unit_amount: 500, // $5.00
+            unit_amount: 99, // $0.99
           },
           quantity: 1,
         },
