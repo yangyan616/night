@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Routine</title>
+    <meta name="stripe-test-key" content="pk_test_your_test_publishable_key">
+    <meta name="stripe-live-key" content="pk_live_your_live_publishable_key">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="morning.css">
+</head>
+<body class="morning-theme">
+    <div class="container">
+        <h1>Morning Routine 🌅</h1>
+        <div class="routine-container">
+            <div class="routine-list">
+                <div class="routine-item">
+                    <label for="item1">
+                        <input type="checkbox" id="item1" class="routine-checkbox">
+                        <span>Hydrate (500ml water + lemon)</span>
+                    </label>
+                    <span class="item-description">Start your metabolism and rehydrate after sleep</span>
+                </div>
+                <div class="routine-item">
+                    <label for="item2">
+                        <input type="checkbox" id="item2" class="routine-checkbox">
+                        <span>5-Minute Meditation</span>
+                    </label>
+                    <span class="item-description">Simple breathing exercise to clear your mind</span>
+                </div>
+                <div class="routine-item">
+                    <label for="item3">
+                        <input type="checkbox" id="item3" class="routine-checkbox">
+                        <span>Quick Movement (10 stretches/exercises)</span>
+                    </label>
+                    <span class="item-description">Wake up your body with basic stretches or exercises</span>
+                </div>
+                <div class="routine-item">
+                    <label for="item4">
+                        <input type="checkbox" id="item4" class="routine-checkbox">
+                        <span>Write 3 Goals for Today</span>
+                    </label>
+                    <span class="item-description">Set your intentions for a productive day</span>
+                </div>
+                <div class="routine-item">
+                    <label for="item5">
+                        <input type="checkbox" id="item5" class="routine-checkbox">
+                        <span>Healthy Breakfast</span>
+                    </label>
+                    <span class="item-description">Fuel your body (protein + fruits/vegetables)</span>
+                </div>
+                <div class="routine-item">
+                    <label for="item6">
+                        <input type="checkbox" id="item6" class="routine-checkbox">
+                        <span>Make Your Bed</span>
+                    </label>
+                    <span class="item-description">Start with a small win to build momentum</span>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+                <span class="progress-text">0/6 completed</span>
+            </div>
+        </div>
+        <div class="routine-tips">
+            <p>💡 Tip: Complete these within 30-45 minutes of waking up</p>
+        </div>
+        <a href="/" class="switch-routine">Switch to Night Routine</a>
+    </div>
+
+    <!-- Celebration Modal -->
+    <div class="celebration-modal">
+        <div class="celebration-content">
+            <h2>🎉 Amazing Job!</h2>
+            <p>You've completed your morning routine!</p>
+            <p>You're set for an incredible day ahead.</p>
+            <button class="close-celebration">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.routine-checkbox');
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.querySelector('.progress-text');
+            const celebrationModal = document.querySelector('.celebration-modal');
+            const closeButton = document.querySelector('.close-celebration');
+            
+            function updateProgress() {
+                const total = checkboxes.length;
+                const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+                const percentage = (checked / total) * 100;
+                
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = `${checked}/${total} completed`;
+
+                // Show celebration when all items are checked
+                if (checked === total) {
+                    celebrationModal.classList.add('show');
+                }
+            }
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateProgress);
+            });
+
+            closeButton.addEventListener('click', () => {
+                celebrationModal.classList.remove('show');
+            });
+
+            // Initialize progress
+            updateProgress();
+        });
+    </script>
+</body>
+</html> 

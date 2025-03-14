@@ -3,70 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - Daily Routine</title>
+    <title>Payment Successful</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        body {
+            background-color: #f0f2f5;
+        }
         .success-container {
             text-align: center;
-            padding: 40px 20px;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+            max-width: 600px;
+            color: #333;
         }
-        
-        .success-icon {
-            font-size: 80px;
+        .success-container h1 {
+            color: #2c3e50;
+            margin: 1rem 0;
+            font-size: 2.2rem;
+        }
+        .check-icon {
             color: #4CAF50;
-            margin-bottom: 20px;
+            font-size: 4rem;
+            margin-bottom: 1rem;
         }
-        
-        .success-title {
-            font-size: 28px;
-            margin-bottom: 15px;
+        .access-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: left;
+            border: 1px solid #e9ecef;
+            color: #2c3e50;
         }
-        
-        .success-message {
-            font-size: 16px;
-            margin-bottom: 30px;
-            color: #b8b8b8;
+        .access-info h2 {
+            color: #1a73e8;
+            margin-top: 0;
         }
-        
-        .back-button {
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        .access-info p {
+            margin: 0.8rem 0;
+            line-height: 1.5;
+        }
+        .important {
+            color: #dc3545;
+            font-weight: bold;
+            padding: 0.5rem 0;
+        }
+        ul {
+            color: #2c3e50;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
             color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             text-decoration: none;
+            border-radius: 5px;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
         }
-        
-        .back-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
-        }
-        
-        .back-button i {
-            margin-right: 8px;
+        .button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="success-container">
-            <div class="success-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h1 class="success-title">Payment Successful!</h1>
-            <p class="success-message">Thank you for upgrading to Premium. You now have access to all premium features!</p>
-            <a href="index.html" class="back-button">
-                <i class="fas fa-arrow-left"></i> Back to Daily Routine
-            </a>
+    <div class="success-container">
+        <div class="check-icon">✓</div>
+        <h1>Payment Successful!</h1>
+        <p>Thank you for your purchase!</p>
+        
+        <div class="access-info">
+            <h2>Next Steps:</h2>
+            <p>We've sent an email to your address with your special access link to the Morning Routine.</p>
+            <p class="important">Important: Bookmark your access link when you receive it!</p>
+            <p>Your access link will work for one year from today.</p>
         </div>
+
+        <p>You can now:</p>
+        <ul style="list-style: none; padding: 0;">
+            <li>✓ Access your Night Routine</li>
+            <li>✓ Access your Morning Routine (via email link)</li>
+            <li>✓ Track your progress</li>
+        </ul>
+
+        <a href="/" class="button">Return to Night Routine</a>
     </div>
 </body>
 </html> 

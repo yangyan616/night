@@ -3,11 +3,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkboxes = document.querySelectorAll('.routine-checkbox');
     const progressBar = document.getElementById('progress-bar');
     const celebrationContainer = document.getElementById('celebration-container');
+    const celebrationModal = document.querySelector('.celebration-modal');
     const resetButton = document.getElementById('reset-button');
+    const closeButton = document.querySelector('.close-celebration');
     const checkoutButton = document.getElementById('checkout-button');
     
-    // Initialize Stripe with the correct publishable key
-    const stripe = Stripe('pk_live_51MyH0mDp1Vb1cgxuaHlVf7NJJdTAV3ZwvhrBkxQCzXh7mSII0WngmonjRWU6vmYOqah7KSxCtPBU3jXp7HSsD53Z00MJk7YBlc');
+    // Check if we're on the night routine page
+    const isNightRoutine = !document.body.classList.contains('morning-theme');
+    
+    // Check if we're in production mode (assuming your server sets this)
+    const isProduction = window.location.hostname !== 'localhost' && 
+                         window.location.hostname !== '127.0.0.1';
+    
+    // Initialize Stripe with the appropriate publishable key
+    // This will be set by your server when it serves the page
+    const stripePublishableKey = isProduction 
+        ? document.querySelector('meta[name="stripe-live-key"]')?.content 
+        : document.querySelector('meta[name="stripe-test-key"]')?.content;
+    
+    const stripe = Stripe(stripePublishableKey);
     
     // Add event listener to checkout button
     if (checkoutButton) {
@@ -46,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Reset button state
                 checkoutButton.disabled = false;
-                checkoutButton.innerHTML = '<i class="fas fa-crown"></i> Upgrade for $1.99';
+                checkoutButton.innerHTML = '<i class="fas fa-crown"></i> Upgrade for $0.99';
             }
         });
     }
@@ -64,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Reset button event listener - using both approaches to ensure it works
+    // Reset button event listener for night routine
     if (resetButton) {
         resetButton.addEventListener('click', handleReset);
         
@@ -77,10 +91,25 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Reset button not found in the DOM');
     }
     
+    // Close button event listener for morning routine
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            if (celebrationModal) {
+                celebrationModal.classList.remove('show');
+            }
+        });
+    }
+    
     function handleReset() {
         console.log('Reset handler called');
         resetChecklist();
-        celebrationContainer.classList.remove('show');
+        
+        // Hide appropriate celebration
+        if (isNightRoutine && celebrationContainer) {
+            celebrationContainer.classList.remove('show');
+        } else if (celebrationModal) {
+            celebrationModal.classList.remove('show');
+        }
     }
     
     // Update progress initially
@@ -93,18 +122,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update progress bar
         const progressPercentage = (checkedItems / totalItems) * 100;
-        progressBar.style.width = progressPercentage + '%';
+        if (progressBar) {
+            progressBar.style.width = progressPercentage + '%';
+        }
         
         // Check if all items are checked
         if (checkedItems === totalItems && totalItems > 0) {
-            // Create confetti immediately when all items are checked
+            // Create confetti effect
             createConfetti();
             
-            // Then show the celebration container after a longer delay (3 seconds instead of 0.5)
-            // This gives more time to enjoy the confetti before the modal appears
+            // Show the appropriate celebration with a delay
             setTimeout(() => {
-                celebrationContainer.classList.add('show');
-            }, 3000);  // Changed from 500ms to 3000ms (3 seconds)
+                if (isNightRoutine && celebrationContainer) {
+                    celebrationContainer.classList.add('show');
+                } else if (celebrationModal) {
+                    celebrationModal.classList.add('show');
+                }
+            }, isNightRoutine ? 3000 : 1000); // Longer delay for night routine
         }
     }
     
@@ -114,12 +148,14 @@ document.addEventListener('DOMContentLoaded', function() {
         checkboxes.forEach(checkbox => {
             state[checkbox.id] = checkbox.checked;
         });
-        localStorage.setItem('nightTimeRoutine', JSON.stringify(state));
+        const routineType = isNightRoutine ? 'nightTimeRoutine' : 'morningRoutine';
+        localStorage.setItem(routineType, JSON.stringify(state));
     }
     
     // Function to load saved state from localStorage
     function loadSavedState() {
-        const savedState = localStorage.getItem('nightTimeRoutine');
+        const routineType = isNightRoutine ? 'nightTimeRoutine' : 'morningRoutine';
+        const savedState = localStorage.getItem(routineType);
         if (savedState) {
             const state = JSON.parse(savedState);
             checkboxes.forEach(checkbox => {
@@ -139,13 +175,24 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProgress();
         saveState();
         
-        // Force clear localStorage as a backup approach
-        localStorage.removeItem('nightTimeRoutine');
+        // Clear localStorage for the current routine
+        const routineType = isNightRoutine ? 'nightTimeRoutine' : 'morningRoutine';
+        localStorage.removeItem(routineType);
     }
     
     // Add confetti effect to celebration
     function createConfetti() {
+        // Only create confetti if we're on the night routine
+        if (!isNightRoutine) return;
+        
         console.log('Creating confetti');
+        
+        // Remove any existing confetti
+        const existingConfetti = document.querySelector('.confetti-container');
+        if (existingConfetti) {
+            existingConfetti.remove();
+        }
+        
         const confettiContainer = document.createElement('div');
         confettiContainer.className = 'confetti-container';
         document.body.appendChild(confettiContainer);
@@ -153,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#1E90FF', '#FF8C00', '#9C27B0', '#FF5722'];
         const shapes = ['square', 'circle', 'triangle', 'rect'];
         
-        for (let i = 0; i < 150; i++) {  // Increased number of confetti pieces
+        for (let i = 0; i < 150; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
             
@@ -165,10 +212,10 @@ document.addEventListener('DOMContentLoaded', function() {
             confetti.style.left = Math.random() * 100 + 'vw';
             
             // Random animation timing
-            confetti.style.animationDuration = (Math.random() * 5 + 3) + 's';  // Increased duration
-            confetti.style.animationDelay = Math.random() * 3 + 's';  // Increased delay
+            confetti.style.animationDuration = (Math.random() * 5 + 3) + 's';
+            confetti.style.animationDelay = Math.random() * 3 + 's';
             
-            // Random size (slightly varied)
+            // Random size
             const size = Math.random() * 6 + 7; // Between 7px and 13px
             confetti.style.width = size + 'px';
             confetti.style.height = size + 'px';
@@ -205,15 +252,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 1500);
         
+        // Remove confetti after animation finishes
         setTimeout(() => {
             confettiContainer.remove();
-        }, 15000);  // Increased to 15 seconds for a longer celebration
+        }, 15000);
     }
     
     // Add keyboard support for accessibility
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && celebrationContainer.classList.contains('show')) {
-            celebrationContainer.classList.remove('show');
+        if (e.key === 'Escape') {
+            if (isNightRoutine && celebrationContainer && celebrationContainer.classList.contains('show')) {
+                celebrationContainer.classList.remove('show');
+            } else if (celebrationModal && celebrationModal.classList.contains('show')) {
+                celebrationModal.classList.remove('show');
+            }
         }
     });
 }); 

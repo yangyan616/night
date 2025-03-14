@@ -1,0 +1,174 @@
+.morning-theme {
+    background: linear-gradient(135deg, #ff9966, #ff5e62);
+    color: #333;
+}
+
+.morning-theme .container {
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Add heading style to ensure visibility */
+.morning-theme h1 {
+    color: #333;
+    text-shadow: 0 2px 5px rgba(255, 255, 255, 0.3);
+}
+
+.morning-theme .routine-item {
+    background-color: #fff;
+    border: 1px solid #ffcccb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.morning-theme .routine-item:hover {
+    background-color: #fff5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.morning-theme .routine-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    background-color: #fff;
+    border: 2px solid #ff9966;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.morning-theme .routine-checkbox:checked {
+    background-color: #ff9966;
+    border-color: #ff9966;
+}
+
+.morning-theme .routine-checkbox:checked::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.morning-theme label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.morning-theme .item-description {
+    color: #666;
+    font-size: 14px;
+    margin-left: 30px;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.morning-theme .progress-container {
+    height: 6px;
+    background-color: rgba(255, 153, 102, 0.2);
+    border-radius: 3px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.morning-theme .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff9966, #ff5e62);
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.morning-theme .switch-routine {
+    display: block;
+    text-align: center;
+    background-color: #ff5e62;
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 25px;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.morning-theme .switch-routine:hover {
+    background-color: #ff4448;
+}
+
+/* Morning Celebration Modal Styles */
+.morning-theme .celebration-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.morning-theme .celebration-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.morning-theme .celebration-modal .celebration-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 15px rgba(255, 94, 98, 0.2);
+}
+
+.morning-theme .celebration-modal.show .celebration-content {
+    transform: scale(1);
+}
+
+.morning-theme .celebration-modal .celebration-content h2 {
+    color: #ff5e62;
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.morning-theme .celebration-modal .celebration-content p {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.morning-theme .close-celebration {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background: linear-gradient(90deg, #ff9966, #ff5e62);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.morning-theme .close-celebration:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 94, 98, 0.3);
+} 
