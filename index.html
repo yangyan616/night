@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Night Time Routine Checklist</title>
-    <meta name="stripe-test-key" content="pk_test_your_test_publishable_key">
-    <meta name="stripe-live-key" content="pk_live_your_live_publishable_key">
+    <meta name="stripe-test-key" content="pk_test_replacedByMiddleware">
+    <meta name="stripe-live-key" content="pk_live_replacedByMiddleware">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://js.stripe.com/v3/"></script>
@@ -43,7 +43,14 @@
         <!-- Payment Section -->
         <div class="payment-section">
             <h2>Upgrade to Premium</h2>
-            <p>Get access to more features!</p>
+            <p>Get access to morning routine and more features!</p>
+            
+            <!-- Email input for checkout -->
+            <div class="email-input-container">
+                <input type="email" id="customer-email" placeholder="Your email for receipt" required>
+                <p class="email-note">We'll send your access link to this email</p>
+            </div>
+            
             <button id="checkout-button" class="payment-button">
                 <i class="fas fa-crown"></i> Upgrade for $0.99
             </button>

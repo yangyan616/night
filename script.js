@@ -21,21 +21,49 @@ document.addEventListener('DOMContentLoaded', function() {
         ? document.querySelector('meta[name="stripe-live-key"]')?.content 
         : document.querySelector('meta[name="stripe-test-key"]')?.content;
     
-    const stripe = Stripe(stripePublishableKey);
+    // Add debug logging for Stripe key
+    console.log("Stripe mode:", isProduction ? "PRODUCTION" : "TEST");
+    console.log("Stripe publishable key prefix:", stripePublishableKey?.substring(0, 7) + "...");
+    
+    // Only initialize Stripe if we have a key
+    let stripe;
+    if (stripePublishableKey) {
+        try {
+            stripe = Stripe(stripePublishableKey);
+            console.log("Stripe initialized successfully");
+        } catch (error) {
+            console.error("Failed to initialize Stripe:", error);
+        }
+    } else {
+        console.error("No Stripe publishable key found in page metadata");
+    }
     
     // Add event listener to checkout button
     if (checkoutButton) {
         checkoutButton.addEventListener('click', async function() {
             try {
+                // Validate Stripe initialization first
+                if (!stripe) {
+                    throw new Error("Stripe is not properly initialized. Please refresh the page or contact support.");
+                }
+                
                 // Show loading state
                 checkoutButton.disabled = true;
                 checkoutButton.textContent = 'Processing...';
                 
+                // Get user's email if we have a field for it
+                const emailInput = document.getElementById('customer-email');
+                const email = emailInput ? emailInput.value : null;
+                
+                console.log("Creating checkout session...");
                 const response = await fetch('/create-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    }
+                    },
+                    body: JSON.stringify({
+                        email: email
+                    })
                 });
 
                 if (!response.ok) {
@@ -45,8 +73,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const session = await response.json();
+                console.log("Checkout session created:", session.id?.substring(0, 10) + "...");
                 
                 // Redirect to Stripe Checkout
+                console.log("Redirecting to Stripe checkout...");
                 const result = await stripe.redirectToCheckout({
                     sessionId: session.id
                 });
@@ -56,7 +86,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Payment error:', error);
-                alert('Payment processing error: ' + error.message);
+                
+                // Provide a user-friendly error message
+                if (error.message.includes("publishable key")) {
+                    alert('Stripe configuration error. Please contact support.');
+                } else if (error.message.includes("session")) {
+                    alert('Unable to start checkout process. Please try again later.');
+                } else {
+                    alert('Payment processing error: ' + error.message);
+                }
                 
                 // Reset button state
                 checkoutButton.disabled = false;

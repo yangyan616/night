@@ -19,6 +19,20 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 
+// Add CORS headers to ensure proper communication with Stripe
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.APP_URL || 'https://daily-routine.up.railway.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Use JSON parsing ONLY for non-webhook routes
 app.use((req, res, next) => {
     if (req.path === '/webhook') {
@@ -225,10 +239,19 @@ app.post('/create-checkout-session', async (req, res) => {
         console.log("Creating checkout session...");
         console.log("Environment:", process.env.NODE_ENV);
         console.log("Using key type:", process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST');
-        console.log("Key starts with:", (process.env.NODE_ENV === 'production' 
-            ? process.env.STRIPE_LIVE_SECRET_KEY 
-            : process.env.STRIPE_SECRET_KEY)?.substring(0, 7) + "...");
         
+        // Check for required API key
+        const apiKey = process.env.NODE_ENV === 'production' 
+            ? process.env.STRIPE_LIVE_SECRET_KEY 
+            : process.env.STRIPE_SECRET_KEY;
+            
+        if (!apiKey) {
+            throw new Error(`Missing ${process.env.NODE_ENV === 'production' ? 'LIVE' : 'TEST'} API key`);
+        }
+        
+        console.log("API key starts with:", apiKey.substring(0, 7) + "...");
+        
+        // Create the checkout session with improved error handling
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
@@ -245,14 +268,23 @@ app.post('/create-checkout-session', async (req, res) => {
             mode: 'payment',
             success_url: `${req.headers.origin}/success.html`,
             cancel_url: `${req.headers.origin}/`,
+            // Collect email address for sending access link
+            customer_email: req.body.email,
+            // Add expanded metadata for better tracking
+            metadata: {
+                app: 'daily-routine',
+                source: 'website-upgrade'
+            }
         });
 
+        console.log("Session created successfully:", session.id);
         res.json({ id: session.id });
     } catch (error) {
         console.error('Error creating checkout session:', error.message);
         console.error('Error type:', error.type);
         console.error('Error code:', error.code);
         console.error('Error param:', error.param);
+        console.error('Error stack:', error.stack);
         
         // Return detailed error to the client for debugging
         res.status(500).json({ 
